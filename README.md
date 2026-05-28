@@ -39,11 +39,7 @@ The project demonstrates:
 Cyberbullying-Prediction-System/
 │
 ├── index.html
-├── style.css
-├── script.js
-├── README.md
-├── assets/
-└── dataset/
+
 ```
 
 ## Live Demo
