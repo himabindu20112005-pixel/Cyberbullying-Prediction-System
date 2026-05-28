@@ -44,7 +44,7 @@ Cyberbullying-Prediction-System/
 
 ## Live Demo
 
-Add your deployed GitHub Pages link here.
+https://himabindu20112005-pixel.github.io/Cyberbullying-Prediction-System/
 
 ## GitHub Repository
 https://github.com/himabindu20112005-pixel/Cyberbullying-Prediction-System
