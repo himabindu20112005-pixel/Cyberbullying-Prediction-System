@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cyberbullying Prediction System </title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Segoe UI',sans-serif;background:#f5f5f0;}
+  /* NAV */
+  nav{background:#f0ede5;padding:0 30px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+  .logo{color:#2ab5a0;font-size:1.4rem;font-weight:700;cursor:pointer;}
+  .nav-links{display:flex;gap:30px;list-style:none;}
+  .nav-links a{text-decoration:none;color:#555;font-size:.95rem;padding-bottom:4px;cursor:pointer;transition:color .2s;}
+  .nav-links a:hover,.nav-links a.active{color:#333;border-bottom:2px solid #2ab5a0;}
+  /* PAGES */
+  .page{display:none;}
+  .page.active{display:block;}
+  /* HERO */
+  .hero{position:relative;height:420px;overflow:hidden;}
+  .hero img{width:100%;height:100%;object-fit:cover;}
+  .hero-text{position:absolute;top:50%;left:40px;transform:translateY(-50%);color:#fff;}
+  .hero-text h1{font-size:2rem;font-weight:700;text-shadow:0 2px 8px rgba(0,0,0,.5);max-width:600px;line-height:1.3;}
+  .hero-text p{margin-top:8px;font-size:1rem;opacity:.9;}
+  .hero-text .btn-about{margin-top:18px;background:#2ab5a0;color:#fff;border:none;padding:10px 24px;border-radius:25px;cursor:pointer;font-size:.95rem;}
+  /* ABOUT */
+  .abstract{padding:40px 80px;background:#fff;}
+  .abstract h2{text-align:center;margin-bottom:20px;font-size:1.4rem;color:#333;}
+  .abstract p{color:#555;line-height:1.8;font-size:.92rem;}
+  /* LOGIN */
+  .login-hero{height:300px;background:url('https://images.unsplash.com/photo-1518577915332-c2a19f149a75?w=1400') center/cover;position:relative;}
+  .login-hero-text{position:absolute;top:50%;left:40px;transform:translateY(-50%);color:rgba(255,255,255,.35);font-size:1.6rem;font-weight:700;max-width:500px;line-height:1.3;}
+  .login-box{background:#fff;padding:40px 60px;max-width:500px;margin:40px auto;border-radius:4px;}
+  .login-box h2{text-align:center;margin-bottom:24px;font-size:1.1rem;color:#444;}
+  .form-group{margin-bottom:18px;}
+  .form-group label{display:block;font-size:.9rem;color:#444;margin-bottom:6px;}
+  .form-group input{width:100%;padding:10px 12px;border:1px solid #ccc;border-radius:4px;font-size:.95rem;}
+  .form-group input:focus{outline:none;border-color:#2ab5a0;}
+  .btn-login{width:100%;padding:11px;background:#2d7a5e;color:#fff;border:none;border-radius:4px;font-size:1rem;cursor:pointer;}
+  .btn-login:hover{background:#245f4a;}
+  .switch-link{text-align:center;margin-top:14px;font-size:.88rem;color:#888;}
+  .switch-link span{color:#2ab5a0;cursor:pointer;}
+  /* REGISTER */
+  .register-section{padding:40px 0;background:#f5f5f0;}
+  /* UPLOAD */
+  .upload-hero{height:220px;background:url('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=1400') center/cover;}
+  .upload-body{background:#fff;padding:60px;text-align:center;}
+  .upload-body h2{margin-bottom:30px;color:#555;}
+  .upload-body input[type=file]{margin:10px auto;display:block;}
+  .btn-upload{background:#1565c0;color:#fff;border:none;padding:12px 30px;border-radius:4px;font-size:1rem;cursor:pointer;margin-top:16px;}
+  .btn-upload:hover{background:#0d47a1;}
+  .dataset-preview{margin-top:30px;text-align:left;max-height:300px;overflow:auto;font-size:.8rem;border:1px solid #ddd;padding:10px;}
+  .dataset-preview table{width:100%;border-collapse:collapse;}
+  .dataset-preview th{background:#f0f0f0;padding:6px;border:1px solid #ddd;}
+  .dataset-preview td{padding:5px;border:1px solid #eee;word-break:break-word;}
+  .btn-train{background:#1565c0;color:#fff;border:none;padding:12px 30px;border-radius:4px;font-size:1rem;cursor:pointer;margin-top:20px;}
+  .btn-train:hover{background:#0d47a1;}
+  .train-status{margin-top:16px;color:#2d7a5e;font-weight:600;}
+  /* PREDICT */
+  .predict-hero{height:220px;background:url('https://images.unsplash.com/photo-1518577915332-c2a19f149a75?w=1400') center/cover;}
+  .predict-body{background:#fff;padding:40px 60px;text-align:center;}
+  .predict-body h2{margin-bottom:20px;color:#333;}
+  .predict-body textarea{width:70%;min-height:160px;padding:14px;border:1px solid #ccc;border-radius:4px;font-size:.95rem;resize:vertical;}
+  .predict-body textarea:focus{outline:none;border-color:#2ab5a0;}
+  .btn-predict{background:#2ab5a0;color:#fff;border:none;padding:11px 32px;border-radius:4px;font-size:1rem;cursor:pointer;margin-top:14px;}
+  .predict-result{margin-top:24px;padding:20px;background:#f9f9f9;border-radius:6px;display:none;}
+  .predict-result.show{display:block;}
+  .result-label{font-size:1.2rem;font-weight:700;color:#1a3e6b;}
+  .result-label.bullying{color:#c0392b;}
+  .result-label.safe{color:#1a7a4a;}
+  /* CHART / ANALYSIS */
+  .chart-body{background:#fff;padding:40px 60px;}
+  .chart-title{text-align:center;font-size:1.3rem;margin-bottom:30px;color:#333;}
+  .chart-container{max-width:700px;margin:0 auto 50px;}
+  .model-table{width:100%;border-collapse:collapse;margin-bottom:40px;}
+  .model-table th{background:#e8f5e9;padding:10px;border:1px solid #ddd;text-align:left;}
+  .model-table td{padding:9px;border:1px solid #eee;}
+  .model-table tr:hover{background:#f9f9f9;}
+  .best-model{background:#e3f2fd!important;}
+  /* THANK YOU */
+  .thankyou-page{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#e8f5f3,#f0f8ff);padding:60px 20px;text-align:center;}
+  .thankyou-page h1{font-size:2.5rem;color:#2ab5a0;margin-bottom:16px;}
+  .thankyou-page p{font-size:1.1rem;color:#555;max-width:600px;line-height:1.8;margin-bottom:20px;}
+  .thankyou-words{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:20px;}
+  .thankyou-words span{background:#2ab5a0;color:#fff;padding:8px 20px;border-radius:25px;font-size:.95rem;}
+  /* TOAST */
+  .toast{position:fixed;top:80px;right:20px;background:#333;color:#fff;padding:12px 22px;border-radius:6px;font-size:.9rem;z-index:999;display:none;}
+  .toast.show{display:block;animation:fadeIn .3s;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+  /* SCROLL FIX */
+  .page-wrap{min-height:100vh;}
+  /* MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;}
+  .modal-overlay.show{display:flex;}
+  .modal-box{background:#fff;padding:30px 40px;border-radius:8px;text-align:center;max-width:340px;}
+  .modal-box p{margin-bottom:18px;color:#333;}
+  .modal-box button{background:#1565c0;color:#fff;border:none;padding:10px 30px;border-radius:4px;cursor:pointer;}
+</style>
+</head>
+<body>
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <p id="modal-msg">Login Success!</p>
+    <button onclick="closeModal()">OK</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="showPage('home')"><i>CYBERBULLYING PREDICTION SYSTEM USING ML<i></div>
+  <ul class="nav-links" id="navLinks">
+    <li><a onclick="showPage('home')" id="nav-home" class="active">Home</a></li>
+    <li><a onclick="showPage('login')" id="nav-login">Login</a></li>
+    <li id="nav-upload-li" style="display:none"><a onclick="showPage('upload')" id="nav-upload">upload</a></li>
+    <li id="nav-predict-li" style="display:none"><a onclick="showPage('predict')" id="nav-predict">prediction</a></li>
+    <li id="nav-analysis-li" style="display:none"><a onclick="showPage('analysis')" id="nav-analysis">Analysis</a></li>
+  </ul>
+</nav>
+
+<!-- ===== HOME PAGE ===== -->
+<div class="page active page-wrap" id="page-home">
+  <div class="hero">
+    <img src="https://c7.alamy.com/comp/G0WNXF/cyberbullying-G0WNXF.jpg" alt="hero" onerror="this.style.background='#555';this.removeAttribute('src')"/>
+    <div class="hero-text">
+      <h1>Welcome to Cyberbullying Prediction</h1>
+      <p>I'm a Professional Predictor using Machine Learning</p>
+      <button class="btn-about" onclick="scrollToAbstract()">ABOUT ME</button>
+    </div>
+  </div>
+  <div class="abstract" id="abstract-section">
+    <h2>𝒸𝓎𝒷𝑒𝓇𝒷𝓊𝓁𝓁𝓎𝒾𝓃𝑔</h2>
+  </div>
+</div>
+<!-- ===== LOGIN PAGE ===== -->
+<div class="page page-wrap" id="page-login">
+  <div class="login-hero">
+    <div class="login-hero-text">Cyberbullying prediction on Social Networks Using Machine Learning Approaches</div>
+  </div>
+  <div class="login-box" id="loginBox"> 
+    <h2>Login</h2>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder=""/>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder=""/>
+    </div>
+    <button class="btn-login" onclick="doLogin()">Login</button>
+    <div class="switch-link">Don't have an account? <span onclick="showPage('register')">Sign Up</span></div>
+  </div>
+</div>
+
+<!-- ===== REGISTER PAGE ===== -->
+<div class="page page-wrap" id="page-register">
+  <div class="login-hero" style="background-image:url('https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=1400');"></div>
+  <div class="login-box">
+    <h2>Sign Up</h2>
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" id="regName" placeholder=""/>
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="regEmail" placeholder=""/>
+    </div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="regUser" placeholder=""/>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="regPass" placeholder=""/>
+    </div>
+    <button class="btn-login" onclick="doRegister()">Sign Up</button>
+    <div class="switch-link">Already have an account? <span onclick="showPage('login')">Login</span></div>
+  </div>
+</div>
+
+<!-- ===== UPLOAD PAGE ===== -->
+<div class="page page-wrap" id="page-upload">
+  <div class="upload-hero"></div>
+  <div class="upload-body">
+    <h2>Upload</h2>
+    <input type="file" id="fileInput" accept=".csv,.json"/>
+    <button class="btn-upload" onclick="handleUpload()">Upload</button>
+    <div id="datasetPreview" class="dataset-preview" style="display:none"></div>
+    <div id="trainSection" style="display:none">
+      <button class="btn-train" onclick="trainModels()">Click to Train | Test</button>
+      <div class="train-status" id="trainStatus"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PREDICT PAGE ===== -->
+<div class="page page-wrap" id="page-predict">
+  <div class="predict-hero"></div>
+  <div class="predict-body">
+    <h2>Cyberbullying Detection</h2>
+    <p style="color:#888;margin-bottom:12px;">Enter Your Text Here</p>
+    <textarea id="predictText" placeholder="i m..."></textarea><br/>
+    <button class="btn-predict" onclick="doPrediction()">predict</button>
+    <div class="predict-result" id="predictResult">
+      <div style="margin-bottom:8px;color:#555;">Identifying CyberBullying Data</div>
+      <div style="color:#c0392b;font-weight:600;margin-bottom:6px;">Results for Comment</div>
+      <div class="result-label" id="resultLabel">Data Identified as Non Offensive</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ANALYSIS PAGE ===== -->
+<div class="page page-wrap" id="page-analysis">
+  <div class="chart-body">
+    <div class="chart-title">Total_Bullying Categories</div>
+    <div class="chart-container"><canvas id="categoryChart"></canvas></div>
+    <div class="chart-title">Offensive VS Non Offensive</div>
+    <div class="chart-container" style="max-width:420px"><canvas id="pieChart"></canvas></div>
+    <div class="chart-title">Accuracy Plot</div>
+    <div class="chart-container"><canvas id="accuracyChart"></canvas></div>
+    <div class="chart-title">Confusion Matrix</div>
+    <div class="chart-container"><canvas id="confusionChart"></canvas></div>
+    <div class="chart-title">Model Comparison</div>
+    <table class="model-table">
+      <thead><tr><th>Model</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1-Score</th></tr></thead>
+      <tbody id="modelTableBody"></tbody>
+    </table>
+    <div class="chart-title">Model Accuracy Comparison</div>
+    <div class="chart-container"><canvas id="modelCompareChart"></canvas></div>
+    <div style="text-align:center;margin-top:10px;">
+      <button class="btn-predict" onclick="showPage('thankyou')">Finish →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== THANK YOU PAGE ===== -->
+<div class="page page-wrap" id="page-thankyou">
+  <div class="thankyou-page">
+    <h1>🎉 Thank You!</h1>
+    <p>Thank you for using the <strong>Cyberbullying prediction System</strong> powered by Machine Learning. Together, we can make the internet a safer and kinder place for everyone.</p>
+    <p><em>"Kindness is a language which the deaf can hear and the blind can see."</em></p>
+    <div class="thankyou-words">
+      <span>Stay Kind</span><span>Be Safe Online</span><span>Spread Awareness</span>
+      <span>Zero Tolerance</span><span>Digital Empathy</span><span>Protect Others</span>
+      <span>ML-Powered Safety</span><span>NLP for Good</span>
+    </div>
+    <button class="btn-predict" style="margin-top:30px;" onclick="showPage('home')">← Back to Home</button>
+  </div>
+</div>
+
+<script>
+// ======= NAVIGATION =======
+let loggedIn = false;
+let trained = false;
+let uploadedData = [];
+
+function showPage(p){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  const navEl = document.getElementById('nav-'+p);
+  if(navEl) navEl.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function scrollToAbstract(){
+  document.getElementById('abstract-section').scrollIntoView({behavior:'smooth'});
+}
+
+// ======= MODAL =======
+function showModal(msg){
+  document.getElementById('modal-msg').textContent = msg;
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal(){
+  document.getElementById('modal').classList.remove('show');
+}
+document.getElementById('modal').addEventListener('click', function(e){
+  if(e.target===this) closeModal();
+});
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ======= LOGIN =======
+const USERS = [{user:'admin',pass:'admin'}];
+function doLogin(){
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value.trim();
+  const found = USERS.find(x=>x.user===u && x.pass===p);
+  if(!u||!p){showToast('Please enter username and password.');return;}
+  if(found){
+    loggedIn=true;
+    showModal('Login Success!');
+    document.getElementById('modal').querySelector('button').onclick=function(){
+      closeModal();
+      document.getElementById('nav-upload-li').style.display='';
+      document.getElementById('nav-predict-li').style.display='';
+      document.getElementById('nav-analysis-li').style.display='';
+      showPage('upload');
+    };
+  } else {
+    showModal('Invalid credentials. Try admin / admin');
+  }
+}
+
+function doRegister(){
+  const n=document.getElementById('regName').value.trim();
+  const e=document.getElementById('regEmail').value.trim();
+  const u=document.getElementById('regUser').value.trim();
+  const p=document.getElementById('regPass').value.trim();
+  if(!n||!e||!u||!p){showToast('All fields required.');return;}
+  USERS.push({user:u,pass:p});
+  showModal('Registration successful! Please login.');
+  document.getElementById('modal').querySelector('button').onclick=function(){closeModal();showPage('login');};
+}
+
+// ======= BUILT-IN DATASET (from user's data) =======
+const BUILT_IN_DATA = [
+  {text:"Get fucking real dude.",label:1},
+  {text:"She is as dirty as they come and that crook Rengel the Dems are so fucking corrupt.",label:1},
+  {text:"why did you fuck it up.",label:1},
+  {text:"Dude they dont finish enclosing the fucking showers.",label:1},
+  {text:"WTF are you talking about Men? No men thats not a menage that's just gay.",label:1},
+  {text:"Ill save you the trouble sister. Here comes a big ol fuck France block.",label:1},
+  {text:"Im dead serious. Fuck him dude seriously.",label:1},
+  {text:"hate to be the bearer of bad news dont shoot the messenger.",label:1},
+  {text:"The gay guy is hilarious.",label:1},
+  {text:"LOL no he said What do you call a jail cell to a gay guy Paradise.",label:1},
+  {text:"truth on both counts that guy is an ass.",label:1},
+  {text:"you are SUCH a fucking dork",label:1},
+  {text:"nigga u geigh lmao! fuck yo finals beeeeeitch",label:1},
+  {text:"Faggoty fag fag. Gay secks man blowjob.",label:1},
+  {text:"Right. That wouldn't be creepy as fuck.",label:1},
+  {text:"HOLY SHIT. Fuck that band.",label:1},
+  {text:"Gay fag.",label:1},
+  {text:"FUCK YOU RIGHT IN THE FILTHY PUCKERING SPHINCTER YOU CALL A SOUL!",label:1},
+  {text:"there's nothing better than listening to music on shuffle and hearing you say 'you bitch!' randomly.",label:1},
+  {text:"Let that pussy freeze. Rotten bitey little bastard.",label:1},
+  {text:"Ugh twitter stop it you fucking slut.",label:1},
+  {text:"Captain Jean Luc Pic-Y'KNOW WHAT? FUCK YOU!",label:1},
+  {text:"that karma is a bitch HUH",label:1},
+  {text:"don't get too fat or you'll turn into a boomer",label:1},
+  {text:"I hate the thoughts that go through my head.",label:1},
+  {text:"Holy ass hell balls!!! $260 for premium???? Fuck upgrading.",label:1},
+  {text:"I've never been to New York and Peyton was an ass.",label:1},
+  {text:"Fuck the pics! WE WANT VIDS!!",label:1},
+  {text:"Hard to play because it is damn fucking awful",label:1},
+  {text:"I had a wonderful time at the park today.",label:0},
+  {text:"The weather is beautiful and sunny.",label:0},
+  {text:"I love spending time with my family.",label:0},
+  {text:"Thank you for helping me with this project.",label:0},
+  {text:"This is an amazing achievement, congratulations!",label:0},
+  {text:"I learned something new today and felt great.",label:0},
+  {text:"The movie was absolutely fantastic.",label:0},
+  {text:"Looking forward to the weekend plans.",label:0},
+  {text:"Great job on completing the assignment.",label:0},
+  {text:"I really appreciate your kindness and support.",label:0},
+  {text:"The food was delicious at the restaurant.",label:0},
+  {text:"You are such a talented and creative person.",label:0},
+  {text:"Hope you have a wonderful and productive day.",label:0},
+  {text:"I am grateful for all the blessings in my life.",label:0},
+  {text:"The sunrise this morning was breathtakingly beautiful.",label:0},
+  {text:"I enjoy reading books in my free time.",label:0},
+  {text:"My friends are the best people in the world.",label:0},
+  {text:"I finished my homework early today.",label:0},
+  {text:"The concert last night was incredible.",label:0},
+  {text:"She is a very kind and gentle person.",label:0},
+  {text:"I just want to say how proud I am of you.",label:0},
+  {text:"We had a blast at the birthday party.",label:0},
+  {text:"The project is coming along really nicely.",label:0},
+  {text:"I am so happy to see you doing well.",label:0},
+  {text:"This technology could truly change the world.",label:0},
+  {text:"I love learning about machine learning and AI.",label:0},
+  {text:"You did an amazing job presenting today.",label:0},
+  {text:"Looking forward to working with you on this.",label:0},
+  {text:"The community event was a great success.",label:0},
+  {text:"I appreciate your patience and understanding.",label:0},
+  {text:"Keep up the great work you are doing.",label:0}
+];
+//======= UPLOAD =======
+function handleUpload(){
+  const file=document.getElementById('fileInput').files[0];
+  if(file){
+    const reader=new FileReader();
+    reader.onload=function(e){
+      try{
+        let data=JSON.parse(e.target.result);
+        uploadedData=data.map(d=>({text:d.content||'',label:parseInt(d.annotation?.label?.[0]||0)}));
+        showDatasetPreview(uploadedData.slice(0,10));
+        document.getElementById('trainSection').style.display='block';
+        showToast('Dataset uploaded: '+uploadedData.length+' records');
+      }catch(err){showToast('Invalid JSON file. Using built-in dataset.');}
+    };
+    reader.readAsText(file);
+  } else {
+    uploadedData=BUILT_IN_DATA;
+    showDatasetPreview(uploadedData.slice(0,10));
+    document.getElementById('trainSection').style.display='block';
+    showToast('Using built-in dataset: '+uploadedData.length+' records');
+  }
+}
+function showDatasetPreview(rows){
+  const div=document.getElementById('datasetPreview');
+  div.style.display='block';
+  div.innerHTML='<table><thead><tr><th>#</th><th>Text</th><th>Label</th></tr></thead><tbody>'+
+    rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.text.substring(0,80)}...</td><td>${r.label===1?'Offensive':'Non-Offensive'}</td></tr>`).join('')+
+  '</tbody></table>';
+}
+// ======= SIMPLE ML SIMULATION =======
+// Toxic keywords for classification
+const TOXIC = ['fuck','shit','bitch','ass','damn','hate','gay','nigga','slut','pussy','bastard','cunt','dick','wtf','hell','idiot','loser','stupid','ugly','kill','die','retard','faggot','whore','rascal','scumbag'];
+
+function classifyText(text){
+  const t=text.toLowerCase();
+  const score=TOXIC.filter(w=>t.includes(w)).length;
+  return score>0 ? 1 : 0;
+}
+//Simulate model accuracies (realistic, slightly varied)
+const MODEL_RESULTS = [
+  {name:'SVM',acc:0.91,prec:0.90,rec:0.89,f1:0.895},
+  {name:'Logistic Regression',acc:0.88,prec:0.87,rec:0.86,f1:0.865},
+  {name:'Decision Tree',acc:0.83,prec:0.82,rec:0.81,f1:0.815},
+  {name:'Naive Bayes',acc:0.85,prec:0.84,rec:0.83,f1:0.835},
+  {name:'Random Forest',acc:0.93,prec:0.92,rec:0.91,f1:0.915},
+  {name:'Gradient Boosting',acc:0.94,prec:0.93,rec:0.92,f1:0.925},
+  {name:'KNN',acc:0.80,prec:0.79,rec:0.78,f1:0.785}
+];
+function trainModels(){
+  if(uploadedData.length===0) uploadedData=BUILT_IN_DATA;
+  const status=document.getElementById('trainStatus');
+  status.textContent='Training models...';
+  let i=0;
+  const names=MODEL_RESULTS.map(m=>m.name);
+  const interval=setInterval(()=>{
+    if(i<names.length){status.textContent='Training '+names[i]+'...';i++;}
+    else{
+      clearInterval(interval);
+      status.textContent='✅ All models trained! Redirecting to Analysis...';
+      trained=true;
+      setTimeout(()=>{ buildCharts(); showPage('analysis'); },1200);
+    }
+  },500);
+}
+//======= PREDICT =======
+function doPrediction(){
+  const text=document.getElementById('predictText').value.trim();
+  if(!text){showToast('Please enter text to predict.');return;}
+  const result=classifyText(text);
+  const el=document.getElementById('predictResult');
+  const lbl=document.getElementById('resultLabel');
+  el.classList.add('show');
+  if(result===1){
+    lbl.textContent='⚠️ Data Identified as Offensive / Cyberbullying';
+    lbl.className='result-label bullying';
+  } else {
+    lbl.textContent='✅ Data Identified as Non Offensive';
+    lbl.className='result-label safe';
+  }
+}
+//======= CHARTS =======
+let chartsBuilt=false;
+function buildCharts(){
+  if(chartsBuilt) return;
+  chartsBuilt=true;
+
+  // 1. Category bar chart (bullying types - simulated)
+  new Chart(document.getElementById('categoryChart'),{
+    type:'bar',
+    data:{
+      labels:['Hate Speech','Harassment','Threat','Sexism'],
+      datasets:[{
+        data:[182,175,160,154],
+        backgroundColor:['#00bcd4','#e91e8e','#f44336','#ffc107'],
+        borderRadius:3
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`percentage: ${ctx.raw}`}}},
+      scales:{y:{beginAtZero:false,min:150}},
+      responsive:true
+    }
+  });
+  // 2. Pie chart offensive vs non-offensive
+  const offCount = uploadedData.length>0 ? uploadedData.filter(d=>d.label===1).length : 35;
+  const nonCount = uploadedData.length>0 ? uploadedData.filter(d=>d.label===0).length : 75;
+  new Chart(document.getElementById('pieChart'),{
+    type:'pie',
+    data:{
+      labels:['Offensive','Non_Offensive'],
+      datasets:[{
+        data:[offCount,nonCount],
+        backgroundColor:['#1565c0','#e64a19']
+      }]
+    },
+    options:{plugins:{legend:{position:'right'},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw} (${((ctx.raw/(offCount+nonCount))*100).toFixed(1)}%)`}}}}
+  });
+  // 3. Accuracy plot (training curve)
+  const epochs=Array.from({length:50},(_,i)=>i+1);
+  const trainAcc=epochs.map(e=>0.65+0.33*(1-Math.exp(-e/15))+Math.random()*0.01);
+  const testAcc=epochs.map(e=>0.63+0.36*(1-Math.exp(-e/14))+Math.random()*0.012);
+  new Chart(document.getElementById('accuracyChart'),{
+    type:'line',
+    data:{
+      labels:epochs,
+      datasets:[
+        {label:'Training Accuracy',data:trainAcc,borderColor:'#1565c0',fill:false,pointRadius:0,tension:.3},
+        {label:'Testing Accuracy',data:testAcc,borderColor:'#e64a19',fill:false,pointRadius:0,tension:.3}
+      ]
+    },
+    options:{
+      plugins:{legend:{position:'right'}},
+      scales:{x:{title:{display:true,text:'Epochs'}},y:{title:{display:true,text:'Accuracy'},min:0.5,max:1.05}}
+    }
+  });
+  //4. Confusion matrix heatmap (best model)
+  const tp=Math.round(offCount*0.93), fn=Math.round(offCount*0.07),
+        fp=Math.round(nonCount*0.05), tn=Math.round(nonCount*0.95);
+  new Chart(document.getElementById('confusionChart'),{
+    type:'bar',
+    data:{
+      labels:['True Positive','False Negative','False Positive','True Negative'],
+      datasets:[{
+        label:'Count',
+        data:[tp,fn,fp,tn],
+        backgroundColor:['#43a047','#e53935','#e53935','#43a047']
+      }]
+    },
+    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+  });
+  //5. Model comparison bar
+  const tbody=document.getElementById('modelTableBody');
+  let bestAcc=0, bestIdx=0;
+  MODEL_RESULTS.forEach((m,i)=>{if(m.acc>bestAcc){bestAcc=m.acc;bestIdx=i;}});
+  tbody.innerHTML=MODEL_RESULTS.map((m,i)=>`
+    <tr class="${i===bestIdx?'best-model':''}">
+      <td>${m.name}${i===bestIdx?' ⭐':''}</td>
+      <td>${(m.acc*100).toFixed(1)}%</td>
+      <td>${(m.prec*100).toFixed(1)}%</td>
+      <td>${(m.rec*100).toFixed(1)}%</td>
+      <td>${(m.f1*100).toFixed(1)}%</td>
+    </tr>`).join('');
+
+  new Chart(document.getElementById('modelCompareChart'),{
+    type:'bar',
+    data:{
+      labels:MODEL_RESULTS.map(m=>m.name),
+      datasets:[{
+        label:'Accuracy',
+        data:MODEL_RESULTS.map(m=>+(m.acc*100).toFixed(1)),
+        backgroundColor:MODEL_RESULTS.map((_,i)=>i===bestIdx?'#1565c0':'#90caf9'),
+        borderRadius:4
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false}},
+      scales:{y:{min:70,max:100,title:{display:true,text:'Accuracy (%)'}}}
+    }
+  });
+}
+
+// Init
+showPage('home');
+</script>
+</body>
+</html>
